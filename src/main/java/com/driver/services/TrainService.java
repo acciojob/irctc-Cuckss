@@ -106,8 +106,11 @@ return noOfPeopleBoardingAtStation;
         //If there are no people travelling in that train you can return 0
         Train train=trainRepository.findById(trainId).get();
         List<Ticket>tickets=train.getBookedTickets();
+        if(tickets.size()==0){
+            return 0;
+        }
         List<Passenger>passengerList;
-        int oldestPerson=Integer.MIN_VALUE;
+        int oldestPerson=0;
         for(Ticket ticket:tickets){
             passengerList=ticket.getPassengersList();
             for(Passenger passenger:passengerList){
@@ -133,7 +136,7 @@ return oldestPerson;
             String route=train.getRoute();
             String routeArr[]=route.split(", ");
             for(String routes:routeArr){
-                if(station.name().equalsIgnoreCase(routes)){
+                if(Arrays.stream(routeArr).anyMatch(thisRoute -> thisRoute.equals(station.name()))){
                     int index= Arrays.asList(routeArr).indexOf(station.name());
                     LocalTime trainDeparture=train.getDepartureTime();
                     LocalTime timeOfPassing=trainDeparture.plusHours(index);
