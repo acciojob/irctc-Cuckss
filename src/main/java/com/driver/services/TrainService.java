@@ -141,23 +141,22 @@ return oldestPerson;
         //in problem statement)
         //You can also assume the seconds and milli seconds value will be 0 in a LocalTime format.
 
-        List<Integer>trainIdList=new ArrayList<>();
-        List<Train>trains=trainRepository.findAll();
-        for(Train train:trains){
-            String route=train.getRoute();
-            String routeArr[]=route.split(", ");
-            for(String routes:routeArr){
-                if(Arrays.stream(routeArr).anyMatch(thisRoute -> thisRoute.equals(station.name()))){
-                    int index= Arrays.asList(routeArr).indexOf(station.name());
-                    LocalTime trainDeparture=train.getDepartureTime();
-                    LocalTime timeOfPassing=trainDeparture.plusHours(index);
-                    if(timeOfPassing.isAfter(startTime) && timeOfPassing.isBefore(endTime)){
-                      trainIdList.add(train.getTrainId());
+        List<Train>trainList=trainRepository.findAll();
+        List<Integer>trainsBwGivenTime=new ArrayList<>();
+        for(Train train:trainList){
+            String []trainRoot=train.getRoute().split(",");
+            for(int i=0;i<trainRoot.length;i++){
+                if(trainRoot[i].equals(station.toString())){
+                    int time=train.getDepartureTime().getHour()+i;
+                    if(time>=startTime.getHour()&&time<=endTime.getHour()){
+                        trainsBwGivenTime.add(train.getTrainId());
                     }
+                    break;
                 }
             }
+
         }
-        return trainIdList;
+        return trainsBwGivenTime;
     }
 
 }
