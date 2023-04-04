@@ -2,6 +2,7 @@ package com.driver.services;
 
 
 import com.driver.EntryDto.BookTicketEntryDto;
+import com.driver.EntryDto.SeatAvailabilityEntryDto;
 import com.driver.model.Passenger;
 import com.driver.model.Ticket;
 import com.driver.model.Train;
@@ -26,6 +27,8 @@ public class TicketService {
 
     @Autowired
     PassengerRepository passengerRepository;
+    @Autowired
+    TrainService trainService;
 
 
     public Integer bookTicket(BookTicketEntryDto bookTicketEntryDto) throws Exception {
@@ -83,7 +86,19 @@ public class TicketService {
 //        return updatedTicket.getTicketId();
 
 
+
         Train train=trainRepository.findById(bookTicketEntryDto.getTrainId()).get();
+        SeatAvailabilityEntryDto seatAvailabilityEntryDto=new SeatAvailabilityEntryDto();
+        seatAvailabilityEntryDto.setFromStation(bookTicketEntryDto.getFromStation());
+        seatAvailabilityEntryDto.setToStation(bookTicketEntryDto.getToStation());
+        seatAvailabilityEntryDto.setTrainId(bookTicketEntryDto.getTrainId());
+        int availableSeats=trainService.calculateAvailableSeats(seatAvailabilityEntryDto);
+        if(availableSeats==0){
+            throw new Exception("Invalid stations");
+        }
+        if(availableSeats<bookTicketEntryDto.getNoOfSeats()){
+            throw new Exception("Less tickets are available");
+        }
         List<Ticket>tickets=train.getBookedTickets();
         String route=train.getRoute();
         String routeArr []=route.split(",");
@@ -108,14 +123,14 @@ public class TicketService {
         }
 
 
-        int count=0;
-        for(Ticket ticket:tickets){
-            count+=ticket.getPassengersList().size();
-        }
-        int  availableSeats=train.getNoOfSeats()-count;
-        if(availableSeats<bookTicketEntryDto.getNoOfSeats()){
-            throw new Exception("Less tickets are available");
-        }
+//        int count=0;
+//        for(Ticket ticket:tickets){
+//            count+=ticket.getPassengersList().size();
+//        }
+//        int  availableSeats=train.getNoOfSeats()-count;
+//        if(availableSeats<bookTicketEntryDto.getNoOfSeats()){
+//            throw new Exception("Less tickets are available");
+//        }
 
 //for(Stringstation:routeArr){
 //if(bookTicketEntryDto.getFromStation().name().equalsIgnoreCase(station))
